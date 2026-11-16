@@ -104,6 +104,18 @@ var cnItem = function (text, node) {
     //检验字典是否可存
     if (!cnItems._OTHER_) cnItems._OTHER_ = [];
 
+    //构建 O(1) 索引（仅首次）
+    if (!cnItems._IDX_) {
+        cnItems._IDX_ = new Map();
+        cnItems._TAGGED_ = [];
+        for (let k in cnItems) {
+            if (k === "_OTHER_") continue;
+            let v = cnItems[k];
+            if (typeof v == "string") cnItems._IDX_.set(k, v);
+            else if (typeof v == "object") cnItems._TAGGED_.push([k, v]);
+        }
+    }
+
     //检查是否排除
     for (let reg of cnExcludeWhole) {
         if (reg.test(text)) {
@@ -118,44 +130,34 @@ var cnItem = function (text, node) {
         }
     }
 
-    //遍历尝试匹配
-    for (let i in cnItems) {
-        //字典已有词汇或译文、且译文不为空，则返回译文
+    //O(1) 精确匹配（原文与去空白形式）
+    let hit = cnItems._IDX_.get(text);
+    if (hit === undefined) {
         let t_trim = text.replace(/^\s+|\s+$/g, "");
-        if (typeof(cnItems[i]) == "string" && (text == i || text == cnItems[i] || t_trim == i || t_trim == cnItems[i])){
-			return text_prefix + cnItems[i] + text_reg_exclude_postfix + text_postfix;
-		} else if ( typeof(cnItems[i]) == "object" && text == i ){
-			let result = cnItemByTag(i, cnItems[i], node, textori);
-			if (result != null){
-				return text_prefix + result + text_reg_exclude_postfix + text_postfix;
-			} else {
-				CNITEM_DEBUG && console.log({text:i, cnitem:cnItems[i], node});
-			}
-		} else {
-            // continue;
+        if (t_trim !== text) hit = cnItems._IDX_.get(t_trim);
+    }
+    if (hit !== undefined) return text_prefix + hit + text_reg_exclude_postfix + text_postfix;
+
+    //带标签词条（数量少，线性遍历）
+    for (let pair of cnItems._TAGGED_) {
+        if (text == pair[0]) {
+            let result = cnItemByTag(pair[0], pair[1], node, textori);
+            if (result != null) return text_prefix + result + text_reg_exclude_postfix + text_postfix;
         }
     }
 
     //调整收录的词条，0=收录原文，1=收录去除前后缀的文本
     let save_cfg = 1;
     let save_text = save_cfg ? text : textori;
-    //遍历生词表是否收录
-    for (
-        let i = 0; i < cnItems._OTHER_.length; i++
-    ) {
-        //已收录则直接返回
-        if (save_text == cnItems._OTHER_[i])
-            return text_prefix + text + text_reg_exclude_postfix + text_postfix;
-    }
+    //生词表用 Set 判重
+    if (!cnItems._OTHER_SET_) cnItems._OTHER_SET_ = new Set(cnItems._OTHER_);
+    if (cnItems._OTHER_SET_.has(save_text))
+        return text_prefix + text + text_reg_exclude_postfix + text_postfix;
 
     if (cnItems._OTHER_.length < 1000) {
-        //未收录则保存
+        //未收录则保存（不再反复排序，仅保持收录功能）
+        cnItems._OTHER_SET_.add(save_text);
         cnItems._OTHER_.push(save_text);
-        cnItems._OTHER_.sort(
-            function (a, b) {
-                return a.localeCompare(b)
-            }
-        );
     }
 
     //开启生词打印

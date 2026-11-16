@@ -1,2 +1,83 @@
-# Civilization3
-一个中文文明模拟游戏 | 给自己喜欢的游戏更新！
+# 文明III（Cividlization III）
+
+> 由 **辰昭** 提供的文明III —— 一款中文完整汉化的网页放置策略游戏。
+> 原作为 Kongregate 上的 Cividlization II（by cbianco8808），本仓库为其本地离线增强版。
+
+## 🎮 游玩方式
+
+**双击 `index.html` 即可在浏览器中离线游玩**（无需服务器、无需联网）。
+
+- 支持本地存档（浏览器 localStorage，自动保存，每 10 秒一次）
+- 离线收益最长 **24 小时**
+- 旧存档无缝兼容（存档格式与原版完全一致）
+
+## ✨ 本地增强版特性
+
+### 汉化
+- 约 250 条新词条：界面、法术/神祇、转生升级、地形、全部城市名
+- 30 条动态整句翻译（战争宣战、瘟疫、转生、攻击预警等带变量的句子）
+- 城市名前缀汉化（如 "Bandung (French)" → "万隆 (法国)"）
+- 60 条城市名前缀映射 + 新增 6 个科技的完整中文译名
+
+### 数值平衡
+| 项目 | 原版 | 本版 |
+|---|---|---|
+| 离线收益上限 | 12 小时 | **24 小时** |
+| 道路金币/贸易加成 | 1.25x | **1.35x** |
+| 铁路生产/贸易加成 | 1.25x / 1.5x | **1.4x / 1.65x** |
+| 军队维护费 | 15% | **12%** |
+| 遗迹探索奖励 | 100 | **150** |
+| 科研成本指数 | 7.8 | **7.3** |
+| 科学家产能 | 1.0 | **1.25** |
+
+### 新增 6 个科技
+| 科技 | 等级 | 前置 | 效果 |
+|---|---|---|---|
+| 灌溉 Irrigation | rank 4 | 农业 | +1 食物/农夫 |
+| 朝圣 Pilgrimage | rank 11 | 神学、宗教 | +1 信仰/祭司 |
+| 混凝土 Concrete | rank 11 | 石工术、建筑学 | +1 生产/建造工人 |
+| 重商主义 Mercantilism | rank 13 | 货币、数学 | +1 金币/商人 |
+| 摄影术 Photography | rank 15 | 光学、化学 | +1 文化/艺人 |
+| 机器人学 Robotics | rank 18 | 电力、工业化 | +2 科学/科学家 |
+
+### 性能优化
+- 汉化引擎 `core.js`：字典匹配由 O(N) 线性扫描改为 O(1) Map 索引，实测 **约 16 倍提速**；生词表判重 Set 化，去掉每次插入的全表排序
+- 主程序 bundle 压缩：2.34MB → 1.46MB（-38%），加载与解析更快
+- 所有脚本 `defer` 加载，不阻塞首屏渲染
+
+### 稳定性修复
+- 修复本地 `file://` 直开白屏：脚本去掉 `type="module"`、路由改用 **Hash 策略**、URL 序列化器修复（原打包被"美化"破坏的模板字符串）、`pushState/replaceState` 失败时自动回退 `location.hash`
+- 移除失效的统计/客服/广告脚本与 Kongregate 平台依赖（本地环境自动跳过）
+
+## 📁 文件结构
+
+```
+index.html                 入口页面
+chs.js                     汉化词典（词条 / 前缀 / 整句翻译）
+core.js                    汉化引擎（MutationObserver 动态翻译）
+main-es2015.*.js           游戏主程序（压缩增强版）
+runtime-es2015.*.js        Angular runtime
+polyfills-es2015.*.js      Angular polyfills
+styles.*.css / assets/     样式与资源
+kongregate_api.js          （仅 Kongregate 平台需要，本地不加载）
+```
+
+## 🔧 更新汉化词典
+
+编辑 `chs.js`：
+- `cnItems`：`'英文': '中文'` 键值对
+- `cnPrefix` / `cnPostfix`：前缀 / 后缀映射
+- `cnFullReplace`：整句正则替换
+修改后记得更新 `index.html` 中 `chs.js?20261109` 的版本号以刷新缓存。
+
+## 🙏 鸣谢
+
+- **文明III 由辰昭提供**
+- 原作 **Cividlization II**：cbianco8808（[Kongregate 页面](https://www.kongregate.com/games/to_change_later/cividlization-2)）
+- 汉化引擎：锅巴汉化（[g8hh.com](http://www.g8hh.com)）—— 麦子、JAR、小蓝、好阳光的小锅巴
+- 图标：Freepik、Eucalyp（[Flaticon](https://www.flaticon.com/)）
+- 背景图：freepik
+
+## 📄 许可
+
+见 [LICENSE](LICENSE)。
