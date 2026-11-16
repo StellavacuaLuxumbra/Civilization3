@@ -11,6 +11,21 @@
 var cnItems = {
     _OTHER_: [],
 
+    //奇点时代（v3.1 新增科技与描述碎片）
+    'Computing': '计算机学',
+    'Rocketry': '火箭学',
+    'Genetics': '基因工程',
+    'Nanotechnology': '纳米技术',
+    'Fusion': '核聚变',
+    'Singularity': '奇点',
+    'Singularity Era': '奇点时代',
+    ' / scientist': ' / 科学家',
+    ' / farmer': ' / 农夫',
+    ' / builder': ' / 建造工人',
+    ' / merchant': ' / 商人',
+    ' / citizen': ' / 市民',
+    ' trade route': ' 贸易路线',
+
     //未分类：
     'Add to queue': '加入队列',
     'Agriculture': '农业',
