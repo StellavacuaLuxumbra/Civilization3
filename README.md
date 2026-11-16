@@ -1,4 +1,4 @@
-# 文明III（Cividlization III）
+# 文明III v3.0.0（Cividlization III）
 
 > 由 **辰昭** 提供的文明III —— 一款中文完整汉化的网页放置策略游戏。
 > 原作为 Kongregate 上的 Cividlization II（by cbianco8808），本仓库为其本地离线增强版。
