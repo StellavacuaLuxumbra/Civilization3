@@ -64,7 +64,17 @@ var cnItem = function (text, node) {
 
     if (typeof (text) != "string")
         return text;
-	let textori = text;
+    let textori = text;
+    //整句优先匹配：完整句子（含动态变量）在处理前后缀之前整句替换
+    if (typeof cnFullReplace != "undefined" && cnFullReplace.length > 0) {
+        for (let i = 0; i < cnFullReplace.length; i++) {
+            let m = text.match(cnFullReplace[i][0]);
+            if (m) {
+                let v = cnFullReplace[i][1];
+                return typeof v == "function" ? v(text, m) : text.replace(cnFullReplace[i][0], v);
+            }
+        }
+    }
     //处理前缀
     let text_prefix = "";
     for (let prefix in cnPrefix) {
@@ -111,7 +121,8 @@ var cnItem = function (text, node) {
     //遍历尝试匹配
     for (let i in cnItems) {
         //字典已有词汇或译文、且译文不为空，则返回译文
-        if (typeof(cnItems[i]) == "string" && (text == i || text == cnItems[i])){
+        let t_trim = text.replace(/^\s+|\s+$/g, "");
+        if (typeof(cnItems[i]) == "string" && (text == i || text == cnItems[i] || t_trim == i || t_trim == cnItems[i])){
 			return text_prefix + cnItems[i] + text_reg_exclude_postfix + text_postfix;
 		} else if ( typeof(cnItems[i]) == "object" && text == i ){
 			let result = cnItemByTag(i, cnItems[i], node, textori);

@@ -1,4 +1,4 @@
-(window.webpackJsonp = window.webpackJsonp || []).push([[1], {
+﻿(window.webpackJsonp = window.webpackJsonp || []).push([[1], {
             0: function (l, n, e) {
                 l.exports = e("zUnb")
             },
@@ -8798,11 +8798,23 @@
                     }
                     pushState(l, n, e, t) {
                         let i = this.prepareExternalUrl(e + zr.normalizeQueryParams(t));
-                        0 == i.length && (i = this._platformLocation.pathname), this._platformLocation.pushState(l, n, i)
+                        0 == i.length && (i = this._platformLocation.pathname);
+                        try {
+                            this._platformLocation.pushState(l, n, i)
+                        } catch (x) {
+                            const h = i.replace(/^#/, "");
+                            window.location.hash !== h && (window.location.hash = h)
+                        }
                     }
                     replaceState(l, n, e, t) {
                         let i = this.prepareExternalUrl(e + zr.normalizeQueryParams(t));
-                        0 == i.length && (i = this._platformLocation.pathname), this._platformLocation.replaceState(l, n, i)
+                        0 == i.length && (i = this._platformLocation.pathname);
+                        try {
+                            this._platformLocation.replaceState(l, n, i)
+                        } catch (x) {
+                            const h = i.replace(/^#/, "");
+                            window.location.hash !== h && (window.location.hash = h)
+                        }
                     }
                     forward() {
                         this._platformLocation.forward()
@@ -11857,18 +11869,28 @@
                     }
                     serialize(l) {
                         var n;
-                        return `${`/${function l(n,e){if(!n.hasChildren())return Vd(n);if(e){const e=n.children[bd]?l(n.children[bd],!1):"",t=[];return Od(n.children,(n,e)=>{e!==bd&&t.push(`${e}:${l(n,!1)}`)}),t.length>0?`${e}(${t.join("//")})`: e
-                    } {
-                        const e = Fd(n, (e, t) => t === bd ? [l(n.children[bd], !1)] : [`${t}:${l(e,!1)}`]);
-                        return `${Vd(n)}/(${e.join("//")})`
+                        const s = function l(n, e) {
+                            if (!n.hasChildren()) return Vd(n);
+                            if (e) {
+                                const e = n.children[bd] ? l(n.children[bd], !1) : "", t = [];
+                                return Od(n.children, (n, e) => {
+                                    e !== bd && t.push(e + ":" + l(n, !1))
+                                }), t.length > 0 ? e + "(" + t.join("//") + ")" : e
+                            } {
+                                const e = Fd(n, (e, t) => t === bd ? [l(n.children[bd], !1)] : [t + ":" + l(e, !1)]);
+                                return Vd(n) + "/(" + e.join("//") + ")"
+                            }
+                        }(l.root, !0);
+                        const q = function (l) {
+                            const n = Object.keys(l).map(n => {
+                                const e = l[n];
+                                return Array.isArray(e) ? e.map(l => Gd(n) + "=" + Gd(l)).join("&") : Gd(n) + "=" + Gd(e)
+                            });
+                            return n.length ? "?" + n.join("&") : ""
+                        }(l.queryParams);
+                        const f = "string" == typeof l.fragment ? "#" + encodeURI(l.fragment) : "";
+                        return s + q + f
                     }
-                }(l.root, !0)
-            }
-            `}${function(l){const n=Object.keys(l).map(n=>{const e=l[n];return Array.isArray(e)?e.map(l=>`${Gd(n)}=${Gd(l)}`).join("&"):`${Gd(n)}=${Gd(e)}`});return n.length?` ? $ {
-                n.join("&")
-            }
-            `:""}(l.queryParams)}${"string"==typeof l.fragment?`#${n=l.fragment,encodeURI(n)}`:""}`
-        }
     }
     const Hd = new Ud;
 
@@ -13535,7 +13557,7 @@
             this.navigations.subscribe(l => {
                 this.navigated = !0, this.lastSuccessfulId = l.id, this.events.next(new td(l.id, this.serializeUrl(l.extractedUrl), this.serializeUrl(this.currentUrlTree))), this.lastSuccessfulNavigation = this.currentNavigation, this.currentNavigation = null, l.resolve(!0)
             }, l => {
-                this.console.warn("Unhandled Navigation Error: ")
+                this.console.warn("Unhandled Navigation Error: " + ((l && (l.stack || l.message || String(l))) || "(no detail)"))
             })
         }
         scheduleNavigation(l, n, e, t) {
@@ -13925,7 +13947,7 @@
     }
 
     function Fp(l, n, e = {}) {
-        return e.useHash ? new Lr(l, n) : new Fr(l, n)
+        return new Lr(l, n)
     }
 
     function qp(l) {
@@ -15466,34 +15488,34 @@
         farmers: {
             id: "farmers",
             name: l => l.hasScience("agriculture") ? "Farmers" : "Hunters-Gatherers",
-            food: (l, n) => 1.5 + (l.hasScience("dog_domestication", l.player(n.ownerid)) ? .5 : 0) + (l.hasScience("agriculture", l.player(n.ownerid)) ? 1 : 0) + (l.hasScience("crop_rotation", l.player(n.ownerid)) ? 1 : 0) + (l.hasScience("fertilizer", l.player(n.ownerid)) ? 2 : 0) + l.improvements(n, 1) + 2 * l.improvements(n, 2)
+            food: (l, n) => 1.5 + (l.hasScience("dog_domestication", l.player(n.ownerid)) ? .5 : 0) + (l.hasScience("agriculture", l.player(n.ownerid)) ? 1 : 0) + (l.hasScience("crop_rotation", l.player(n.ownerid)) ? 1 : 0) + (l.hasScience("fertilizer", l.player(n.ownerid)) ? 2 : 0) + (l.hasScience("irrigation", l.player(n.ownerid)) ? 1 : 0) + l.improvements(n, 1) + 2 * l.improvements(n, 2)
         },
         builders: {
             id: "builders",
             name: () => "Builders",
-            prod: (l, n) => 1 + (l.hasScience("navigation", l.player(n.ownerid)) ? .5 : 0) + (l.hasWonder(n.ownerid, "temple_artemis") ? 1 : 0) + l.improvements(n, 3) + 2 * l.improvements(n, 4)
+            prod: (l, n) => 1 + (l.hasScience("navigation", l.player(n.ownerid)) ? .5 : 0) + (l.hasWonder(n.ownerid, "temple_artemis") ? 1 : 0) + (l.hasScience("concrete", l.player(n.ownerid)) ? 1 : 0) + l.improvements(n, 3) + 2 * l.improvements(n, 4)
         },
         merchants: {
             id: "merchants",
             name: () => "Merchants",
-            gold: (l, n) => 1 + (l.hasScience("wheel", l.player(n.ownerid)) ? 1 : 0) + l.improvements(n, 7)
+            gold: (l, n) => 1 + (l.hasScience("wheel", l.player(n.ownerid)) ? 1 : 0) + (l.hasScience("mercantilism", l.player(n.ownerid)) ? 1 : 0) + l.improvements(n, 7)
         },
         scientists: {
             id: "scientists",
             name: l => l.hasScience("engineering") ? "Scientists" : "Scholars",
-            science: (l, n) => 1 + (l.hasScience("engineering", l.player(n.ownerid)) ? 1 : 0) + (l.hasPolicyGroup("rationalism", n.ownerid) ? 1 : 0) + l.improvements(n, 8),
+            science: (l, n) => 1.25 + (l.hasScience("engineering", l.player(n.ownerid)) ? 1 : 0) + (l.hasPolicyGroup("rationalism", n.ownerid) ? 1 : 0) + (l.hasScience("robotics", l.player(n.ownerid)) ? 2 : 0) + l.improvements(n, 8),
             health: (l, n) => l.hasPolicy("who", n) ? .08 : 0
         },
         artists: {
             id: "artists",
             name: () => "Artists",
-            culture: (l, n = 0) => 1 + (l.hasScience("drama", l.player(n)) ? .5 : 0),
+            culture: (l, n = 0) => 1 + (l.hasScience("drama", l.player(n)) ? .5 : 0) + (l.hasScience("photography", l.player(n)) ? 1 : 0),
             happiness: l => .08
         },
         priests: {
             id: "priests",
             name: () => "Priests",
-            faith: (l, n = 0) => 1 + (l.hasScience("theology", l.player(n)) ? .5 : 0)
+            faith: (l, n = 0) => 1 + (l.hasScience("theology", l.player(n)) ? .5 : 0) + (l.hasScience("pilgrimage", l.player(n)) ? 1 : 0)
         }
     }, og = {
         lo: {
@@ -16975,6 +16997,48 @@
             description: 'Can be researched repeatedly.<br/>Produce <span class="text-progress"><i class="' + ug.progress + '"></i> +10</span>',
             require: ["electricity", "railroad", "dynamite", "sanitation"],
             rank: 19
+        },
+irrigation: {
+            id: "irrigation",
+            label: "Irrigation",
+            description: '<span class="text-food">+1 <i class="' + ug.food + '"></i> / farmer</span>',
+            require: ["agriculture"],
+            rank: 4
+        },
+pilgrimage: {
+            id: "pilgrimage",
+            label: "Pilgrimage",
+            description: '<span class="text-faith">+1 <i class="' + ug.faith + '"></i> / priest</span>',
+            require: ["theology", "religion"],
+            rank: 11
+        },
+concrete: {
+            id: "concrete",
+            label: "Concrete",
+            description: '<span class="text-prod">+1 <i class="' + ug.prod + '"></i> / builder</span>',
+            require: ["masonry", "construction"],
+            rank: 11
+        },
+mercantilism: {
+            id: "mercantilism",
+            label: "Mercantilism",
+            description: '<span class="text-gold">+1 <i class="' + ug.gold + '"></i> / merchant</span>',
+            require: ["currency", "mathematics"],
+            rank: 13
+        },
+photography: {
+            id: "photography",
+            label: "Photography",
+            description: '<span class="text-culture">+1 <i class="' + ug.culture + '"></i> / artist</span>',
+            require: ["optics", "chemistry"],
+            rank: 15
+        },
+robotics: {
+            id: "robotics",
+            label: "Robotics",
+            description: '<span class="text-science">+2 <i class="' + ug.science + '"></i> / scientist</span>',
+            require: ["electricity", "industrialization"],
+            rank: 18
         }
     }, hg = {
         groups: {
@@ -19813,14 +19877,14 @@
         }
     }; class Tg {
         constructor() {
-            this.version = 43, this.aes_key = "wA7Xb*6JZ7$R2p9bP_Nq", this.ut = 100, this.mut = 6e4, this.ait = 5e3, this.max_dt = 43200, this.max_influence_dt = 900, this.max_plague_dt = 300, this.max_influence = 2, this.autosave_delay = 9500, this.toast_delay = 15e3, this.citizens = ag, this.buildings = og, this.sciences = dg, this.barbarian_happiness = .7, this.barbarian_burn_chances = .2, this.terrains = Cg, this.biomes = Sg, this.improvements = Ig, this.upgrades = kg, this.eras = cg, this.policies = hg, this.troops = pg, this.locks = fg, this.difficulties = gg, this.deities = vg, this.powers = _g, this.spells = bg, this.autoassign = wg, this.civilizations = xg, this.trade_route_ratio = .5, this.trade_diplomacy_ratio = .5, this.truce_length = 1800, this.war_min_length = 1800, this.alliance_min_length = 1800, this.promotion_cooldown = 900, this.capital_cooldown = 3600, this.closest_relation_decrease = 1, this.deity_relation_change = 1, this.alliance_w_enemy_relation_change = -1, this.war_w_friend_relation_change = -1, this.alliance_w_friend_relation_change = 1, this.war_w_enemy_relation_change = 1, this.troop_speed_ratio = .05, this.gold_transfer_speed = 1, this.init = {
+            this.version = 43, this.aes_key = "wA7Xb*6JZ7$R2p9bP_Nq", this.ut = 100, this.mut = 6e4, this.ait = 5e3, this.max_dt = 86400, this.max_influence_dt = 900, this.max_plague_dt = 300, this.max_influence = 2, this.autosave_delay = 9500, this.toast_delay = 15e3, this.citizens = ag, this.buildings = og, this.sciences = dg, this.barbarian_happiness = .7, this.barbarian_burn_chances = .2, this.terrains = Cg, this.biomes = Sg, this.improvements = Ig, this.upgrades = kg, this.eras = cg, this.policies = hg, this.troops = pg, this.locks = fg, this.difficulties = gg, this.deities = vg, this.powers = _g, this.spells = bg, this.autoassign = wg, this.civilizations = xg, this.trade_route_ratio = .5, this.trade_diplomacy_ratio = .5, this.truce_length = 1800, this.war_min_length = 1800, this.alliance_min_length = 1800, this.promotion_cooldown = 900, this.capital_cooldown = 3600, this.closest_relation_decrease = 1, this.deity_relation_change = 1, this.alliance_w_enemy_relation_change = -1, this.war_w_friend_relation_change = -1, this.alliance_w_friend_relation_change = 1, this.war_w_enemy_relation_change = 1, this.troop_speed_ratio = .05, this.gold_transfer_speed = 1, this.init = {
                 map_size: 30,
                 barbarians: {
                     nb: 120
                 }
             }, this.base_defense = 1, this.pop_defense = .05, this.save = {
                 prefix: "cv2sv_"
-            }, this.troop_maintenance = .15, this.revoltImmunityDuration = 3e5, this.colony_nb = 20, this.colony_base_gold = .03, this.colony_base_gold_trade = .05, this.colony_base_happiness = .03, this.rightful_owner_timer = 1800, this.rightful_owner_influence_mult = 1.5, this.barbarians_color = "#f9efef", this.barbarians_color2 = "#181c10", this.road_speed_mult = 2, this.rail_speed_mult = 4, this.road_gold_mult = 1.25, this.road_trade_mult = 1.25, this.rail_prod_mult = 1.25, this.rail_trade_mult = 1.5, this.biome_size = 5, this.ruins = 100
+            }, this.troop_maintenance = .12, this.revoltImmunityDuration = 3e5, this.colony_nb = 20, this.colony_base_gold = .03, this.colony_base_gold_trade = .05, this.colony_base_happiness = .03, this.rightful_owner_timer = 1800, this.rightful_owner_influence_mult = 1.5, this.barbarians_color = "#f9efef", this.barbarians_color2 = "#181c10", this.road_speed_mult = 2, this.rail_speed_mult = 4, this.road_gold_mult = 1.35, this.road_trade_mult = 1.35, this.rail_prod_mult = 1.4, this.rail_trade_mult = 1.65, this.biome_size = 5, this.ruins = 150
         }
     }
     class Eg {
@@ -20941,7 +21005,7 @@
             }
             scienceCost(l, n = 0) {
                 let e = 1 - .02 * this.data.players.filter(n => this.hasScience(l.id)).length;
-                return 1 == n && (e = 1), Math.floor(e * (5.5 * Math.pow(l.rank / 2, 7.8) - 10 + 20 * l.rank))
+                return 1 == n && (e = 1), Math.floor(e * (5.5 * Math.pow(l.rank / 2, 7.3) - 10 + 20 * l.rank))
             }
             buildingGoldCost(l, n = 0) {
                 return l.free ? 0 : Math.floor((86 + Math.pow(this.conf.sciences[l.require.science].rank || 0, 6) / 4.5) * (this.hasPolicyGroup("militarism", n) && "military" == l.category ? .75 : 1))
@@ -21902,7 +21966,7 @@
     }
 
     function lm(l) {
-        return ku(0, [mi(0, $a, [Ji]), (l()(), su(1, 0, null, null, 19, "div", [["class", "homepage d-flex justify-content-center align-items-center vh-100"]], null, null, null, null, null)), (l()(), su(2, 0, null, null, 16, "div", [], null, null, null, null, null)), (l()(), su(3, 0, null, null, 3, "h1", [["class", "display-1 font-weight-bold"]], null, null, null, null, null)), (l()(), _u(-1, null, ["Cividlization II "])), (l()(), su(5, 0, null, null, 1, "div", [["class", "text-muted text-center mb-2"], ["style", "margin-top:-20px;font-size:40%"]], null, null, null, null, null)), (l()(), _u(-1, null, ["Industrial Revolution Update"])), (l()(), iu(16777216, null, null, 1, null, Fg)), gi(8, 16384, null, 0, Pa, [Fe, $e], {
+        return ku(0, [mi(0, $a, [Ji]), (l()(), su(1, 0, null, null, 19, "div", [["class", "homepage d-flex justify-content-center align-items-center vh-100"]], null, null, null, null, null)), (l()(), su(2, 0, null, null, 16, "div", [], null, null, null, null, null)), (l()(), su(3, 0, null, null, 3, "h1", [["class", "display-1 font-weight-bold"]], null, null, null, null, null)), (l()(), _u(-1, null, ["文明III "])), (l()(), su(5, 0, null, null, 1, "div", [["class", "text-muted text-center mb-2"], ["style", "margin-top:-20px;font-size:40%"]], null, null, null, null, null)), (l()(), _u(-1, null, ["Industrial Revolution Update"])), (l()(), iu(16777216, null, null, 1, null, Fg)), gi(8, 16384, null, 0, Pa, [Fe, $e], {
             ngIf: [0, "ngIf"]
         }, null), (l()(), iu(16777216, null, null, 1, null, qg)), gi(10, 16384, null, 0, Pa, [Fe, $e], {
             ngIf: [0, "ngIf"]
@@ -26817,7 +26881,7 @@
     }
 
     function Ow(l) {
-        return ku(0, [(l()(), su(0, 0, null, null, 12, "div", [["class", "tuto_bg d-flex justify-content-center align-items-center text-light text-150"], ["style", "top:0;left:0"]], null, null, null, null, null)), (l()(), su(1, 0, null, null, 11, "div", [], null, null, null, null, null)), (l()(), su(2, 0, null, null, 1, "h4", [], null, null, null, null, null)), (l()(), _u(-1, null, ["Welcome to Cividlization II !"])), (l()(), su(4, 0, null, null, 1, "p", [], null, null, null, null, null)), (l()(), _u(-1, null, ["This is a short tutorial to help you get started with this game."])), (l()(), su(6, 0, null, null, 1, "p", [["class", "text-90"]], null, null, null, null, null)), (l()(), _u(-1, null, ["It will not cover every feature of this game, you will need to refer to the help section to get more information."])), (l()(), su(8, 0, null, null, 4, "p", [], null, null, null, null, null)), (l()(), su(9, 0, null, null, 1, "a", [["class", "btn mr-2 btn-danger"]], null, [[null, "click"]], (function (l, n, e) {
+        return ku(0, [(l()(), su(0, 0, null, null, 12, "div", [["class", "tuto_bg d-flex justify-content-center align-items-center text-light text-150"], ["style", "top:0;left:0"]], null, null, null, null, null)), (l()(), su(1, 0, null, null, 11, "div", [], null, null, null, null, null)), (l()(), su(2, 0, null, null, 1, "h4", [], null, null, null, null, null)), (l()(), _u(-1, null, ["欢迎来到文明III！"])), (l()(), su(4, 0, null, null, 1, "p", [], null, null, null, null, null)), (l()(), _u(-1, null, ["This is a short tutorial to help you get started with this game."])), (l()(), su(6, 0, null, null, 1, "p", [["class", "text-90"]], null, null, null, null, null)), (l()(), _u(-1, null, ["It will not cover every feature of this game, you will need to refer to the help section to get more information."])), (l()(), su(8, 0, null, null, 4, "p", [], null, null, null, null, null)), (l()(), su(9, 0, null, null, 1, "a", [["class", "btn mr-2 btn-danger"]], null, [[null, "click"]], (function (l, n, e) {
             var t = !0;
             return "click" === n && (t = !1 !== l.component.init(!0) && t), t
         }), null, null)), (l()(), _u(-1, null, ["Skip"])), (l()(), su(11, 0, null, null, 1, "a", [["class", "btn mr-2 btn-primary"]], null, [[null, "click"]], (function (l, n, e) {
@@ -33606,8 +33670,8 @@
     const oD = {
         home: {
             id: "home",
-            name: "Cividlization II",
-            html: () => '<p>Welcome to the Cividlization II Help pages !</p><p>Here you will find answers to all of your questions about this Game.</p><p><b class="text-danger">Spoiler alert !</b> While the help sections are a great way to learn more about the mechanics of this game, it might reveal some features that are locked in the early stage of the game.</p><p>You can find the meaning of all the icons used in this game <a href="/game/help#icons">in this section</a>.</p><p>In the footer of this page, you will see links to different pages related to your current page.</p><div class="text-center w-100"><i class="text-500 fas fa-arrow-down"></i></div>'
+            name: "文明III",
+            html: () => '<p>欢迎来到文明III的帮助页面！</p><p>Here you will find answers to all of your questions about this Game.</p><p><b class="text-danger">Spoiler alert !</b> While the help sections are a great way to learn more about the mechanics of this game, it might reveal some features that are locked in the early stage of the game.</p><p>You can find the meaning of all the icons used in this game <a href="/game/help#icons">in this section</a>.</p><p>In the footer of this page, you will see links to different pages related to your current page.</p><div class="text-center w-100"><i class="text-500 fas fa-arrow-down"></i></div>'
         },
         citizens: {
             id: "citizens",
@@ -34009,7 +34073,7 @@
         }), null, null)), (l()(), su(30, 0, null, null, 0, "i", [], [[8, "className", 0]], null, null, null, null)), (l()(), _u(-1, null, [" Give 500 Kreds"])), (l()(), su(32, 0, null, null, 2, "button", [["class", "btn btn-outline-danger"]], null, [[null, "click"]], (function (l, n, e) {
             var t = !0;
             return "click" === n && (t = !1 !== l.component.buy(1e3) && t), t
-        }), null, null)), (l()(), su(33, 0, null, null, 0, "i", [], [[8, "className", 0]], null, null, null, null)), (l()(), _u(-1, null, [" Give 1000 Kreds"])), (l()(), su(35, 0, null, null, 1, "h3", [], null, null, null, null, null)), (l()(), _u(-1, null, ["Thanks"])), (l()(), _u(-1, null, ["\nMany thanks to "])), (l()(), su(38, 0, null, null, 1, "b", [], null, null, null, null, null)), (l()(), _u(-1, null, ["henkekalmar"])), (l()(), _u(-1, null, [", "])), (l()(), su(41, 0, null, null, 1, "b", [], null, null, null, null, null)), (l()(), _u(-1, null, ["Wicia777"])), (l()(), _u(-1, null, [", "])), (l()(), su(44, 0, null, null, 1, "b", [], null, null, null, null, null)), (l()(), _u(-1, null, ["aussy8"])), (l()(), _u(-1, null, [", "])), (l()(), su(47, 0, null, null, 1, "b", [], null, null, null, null, null)), (l()(), _u(-1, null, ["Rekaniso"])), (l()(), _u(-1, null, [", "])), (l()(), su(50, 0, null, null, 1, "b", [], null, null, null, null, null)), (l()(), _u(-1, null, ["Sieker"])), (l()(), _u(-1, null, [", "])), (l()(), su(53, 0, null, null, 1, "b", [], null, null, null, null, null)), (l()(), _u(-1, null, ["WLBjork"])), (l()(), _u(-1, null, [" and\n"])), (l()(), su(56, 0, null, null, 1, "b", [], null, null, null, null, null)), (l()(), _u(-1, null, ["cbianco8808"])), (l()(), _u(-1, null, [" for\nhelping with beta-testing this game ! "])), (l()(), su(59, 0, null, null, 1, "h3", [], null, null, null, null, null)), (l()(), _u(-1, null, ["Credits"])), (l()(), su(61, 0, null, null, 9, "div", [], null, null, null, null, null)), (l()(), _u(-1, null, ["Icons made by "])), (l()(), su(63, 0, null, null, 1, "a", [["href", "https://www.flaticon.com/authors/freepik"], ["title", "Freepik"]], null, null, null, null, null)), (l()(), _u(-1, null, ["Freepik"])), (l()(), _u(-1, null, [", "])), (l()(), su(66, 0, null, null, 1, "a", [["href", "https://www.flaticon.com/authors/eucalyp"], ["title", "Eucalyp"]], null, null, null, null, null)), (l()(), _u(-1, null, ["Eucalyp"])), (l()(), _u(-1, null, [" from "])), (l()(), su(69, 0, null, null, 1, "a", [["href", "https://www.flaticon.com/"], ["title", "Flaticon"]], null, null, null, null, null)), (l()(), _u(-1, null, ["www.flaticon.com"])), (l()(), iu(16777216, null, null, 1, null, ID)), gi(72, 16384, null, 0, Pa, [Fe, $e], {
+        }), null, null)), (l()(), su(33, 0, null, null, 0, "i", [], [[8, "className", 0]], null, null, null, null)), (l()(), _u(-1, null, [" Give 1000 Kreds"])), (l()(), su(35, 0, null, null, 1, "h3", [], null, null, null, null, null)), (l()(), _u(-1, null, ["Thanks"])), (l()(), _u(-1, null, ["\nMany thanks to "])), (l()(), su(38, 0, null, null, 1, "b", [], null, null, null, null, null)), (l()(), _u(-1, null, ["henkekalmar"])), (l()(), _u(-1, null, [", "])), (l()(), su(41, 0, null, null, 1, "b", [], null, null, null, null, null)), (l()(), _u(-1, null, ["Wicia777"])), (l()(), _u(-1, null, [", "])), (l()(), su(44, 0, null, null, 1, "b", [], null, null, null, null, null)), (l()(), _u(-1, null, ["aussy8"])), (l()(), _u(-1, null, [", "])), (l()(), su(47, 0, null, null, 1, "b", [], null, null, null, null, null)), (l()(), _u(-1, null, ["Rekaniso"])), (l()(), _u(-1, null, [", "])), (l()(), su(50, 0, null, null, 1, "b", [], null, null, null, null, null)), (l()(), _u(-1, null, ["Sieker"])), (l()(), _u(-1, null, [", "])), (l()(), su(53, 0, null, null, 1, "b", [], null, null, null, null, null)), (l()(), _u(-1, null, ["WLBjork"])), (l()(), _u(-1, null, [" and\n"])), (l()(), su(56, 0, null, null, 1, "b", [], null, null, null, null, null)), (l()(), _u(-1, null, ["cbianco8808"])), (l()(), _u(-1, null, [" for\nhelping with beta-testing this game ! "])), (l()(), su(59, 0, null, null, 1, "h3", [], null, null, null, null, null)), (l()(), _u(-1, null, ["Credits"])), (l()(), su(61, 0, null, null, 9, "div", [], null, null, null, null, null)), (l()(), _u(-1, null, ["文明III 由辰昭提供。图标来自 "])), (l()(), su(63, 0, null, null, 1, "a", [["href", "https://www.flaticon.com/authors/freepik"], ["title", "Freepik"]], null, null, null, null, null)), (l()(), _u(-1, null, ["Freepik"])), (l()(), _u(-1, null, [", "])), (l()(), su(66, 0, null, null, 1, "a", [["href", "https://www.flaticon.com/authors/eucalyp"], ["title", "Eucalyp"]], null, null, null, null, null)), (l()(), _u(-1, null, ["Eucalyp"])), (l()(), _u(-1, null, ["，来自 "])), (l()(), su(69, 0, null, null, 1, "a", [["href", "https://www.flaticon.com/"], ["title", "Flaticon"]], null, null, null, null, null)), (l()(), _u(-1, null, ["www.flaticon.com"])), (l()(), iu(16777216, null, null, 1, null, ID)), gi(72, 16384, null, 0, Pa, [Fe, $e], {
             ngIf: [0, "ngIf"]
         }, null), (l()(), su(73, 0, null, null, 1, "div", [["class", "position-absolute text-secondary"], ["style", "bottom:5px;right:5px"]], null, null, null, null, null)), (l()(), _u(74, null, ["Version: ", "\n"])), (l()(), su(75, 0, null, null, 1, "h3", [], null, null, null, null, null)), (l()(), _u(-1, null, ["Changelog"])), (l()(), su(77, 0, null, null, 1, "a", [["class", "btn btn-primary"], ["href", "https://festive-perlman-5fad70.netlify.com/changelog"], ["target", "_blank"]], null, null, null, null, null)), (l()(), _u(-1, null, ["Complete Changelog"]))], (function (l, n) {
             l(n, 72, 0, n.component.thanks)
@@ -35928,7 +35992,7 @@
     }
 
     function nN(l) {
-        return ku(0, [(l()(), su(0, 0, null, null, 3, "div", [["class", "text-dark text-150"]], null, null, null, null, null)), (l()(), _u(-1, null, ["This game is available for free on "])), (l()(), su(2, 0, null, null, 1, "a", [["class", "text-danger"], ["href", "https://www.kongregate.com/games/to_change_later/cividlization-2"]], null, null, null, null, null)), (l()(), _u(-1, null, ["Kongregate.com"]))], null, null)
+        return ku(0, [(l()(), su(0, 0, null, null, 3, "div", [["class", "text-dark text-150"]], null, null, null, null, null)), (l()(), _u(-1, null, ["文明III 由辰昭提供 · 原作发布于 "])), (l()(), su(2, 0, null, null, 1, "a", [["class", "text-danger"], ["href", "https://www.kongregate.com/games/to_change_later/cividlization-2"]], null, null, null, null, null)), (l()(), _u(-1, null, ["Kongregate.com"]))], null, null)
     }
 
     function eN(l) {
