@@ -10,6 +10,13 @@
 */
 
 var CNITEM_DEBUG = 0;
+//翻译结果缓存（仅缓存与节点无关的确定性结果）
+function cnItemCache(text, out) {
+    let cache = cnItem._CACHE;
+    if (cache.size > 8000) cache.clear();
+    cache.set(text, out);
+    return out;
+}
 function cnItemByTag(text, itemgroup, node, textori){
 	for (let i in itemgroup){
 		if (i[0] == '.') { //匹配节点及其父节点的class
@@ -65,6 +72,10 @@ var cnItem = function (text, node) {
     if (typeof (text) != "string")
         return text;
     let textori = text;
+    //命中缓存则直接返回
+    if (!cnItem._CACHE) cnItem._CACHE = new Map();
+    let cached = cnItem._CACHE.get(textori);
+    if (cached !== undefined) return cached;
     //整句优先匹配：完整句子（含动态变量）在处理前后缀之前整句替换
     if (typeof cnFullReplace != "undefined" && cnFullReplace.length > 0) {
         for (let i = 0; i < cnFullReplace.length; i++) {
@@ -119,14 +130,14 @@ var cnItem = function (text, node) {
     //检查是否排除
     for (let reg of cnExcludeWhole) {
         if (reg.test(text)) {
-            return text_prefix + text + text_reg_exclude_postfix + text_postfix;;
+            return cnItemCache(textori, text_prefix + text + text_reg_exclude_postfix + text_postfix);;
         }
     }
 
     //尝试正则替换
     for (let [key, value] of cnRegReplace.entries()) {
         if (key.test(text)) {
-            return text_prefix + text.replace(key, value) + text_reg_exclude_postfix + text_postfix;
+            return cnItemCache(textori, text_prefix + text.replace(key, value) + text_reg_exclude_postfix + text_postfix);
         }
     }
 
@@ -136,7 +147,7 @@ var cnItem = function (text, node) {
         let t_trim = text.replace(/^\s+|\s+$/g, "");
         if (t_trim !== text) hit = cnItems._IDX_.get(t_trim);
     }
-    if (hit !== undefined) return text_prefix + hit + text_reg_exclude_postfix + text_postfix;
+    if (hit !== undefined) return cnItemCache(textori, text_prefix + hit + text_reg_exclude_postfix + text_postfix);
 
     //带标签词条（数量少，线性遍历）
     for (let pair of cnItems._TAGGED_) {
@@ -152,7 +163,7 @@ var cnItem = function (text, node) {
     //生词表用 Set 判重
     if (!cnItems._OTHER_SET_) cnItems._OTHER_SET_ = new Set(cnItems._OTHER_);
     if (cnItems._OTHER_SET_.has(save_text))
-        return text_prefix + text + text_reg_exclude_postfix + text_postfix;
+        return cnItemCache(textori, text_prefix + text + text_reg_exclude_postfix + text_postfix);
 
     if (cnItems._OTHER_.length < 1000) {
         //未收录则保存（不再反复排序，仅保持收录功能）
@@ -166,7 +177,7 @@ var cnItem = function (text, node) {
         );
 
     //返回生词字串
-    return text_prefix + text + text_reg_exclude_postfix + text_postfix;
+    return cnItemCache(textori, text_prefix + text + text_reg_exclude_postfix + text_postfix);
 };
 
 transTaskMgr = {
@@ -254,4 +265,140 @@ function TransSubTextNode(node) {
         //console.log("捕获到页面变化并执行汉化，耗时" + (afterTransTime - beforeTransTime) + "毫秒");
     });
     observer.observe(targetNode, observer_config);
+}();
+
+// ============ CN3-ENCOUNTER 奇遇系统 ============
+// 随机出现可点击的"奇点宝珠"，点击获得资源奖励。
+// 依赖主程序暴露的 window.__cv3（由 qv/AI 引擎构造函数注入）。
+! function () {
+    if (!document.head || typeof document.createElement !== "function" || typeof setInterval !== "function") return;
+    var style = document.createElement("style");
+    style.textContent =
+        ".cn3-orb{position:fixed;width:64px;height:64px;border-radius:50%;z-index:99999;cursor:pointer;" +
+        "background:radial-gradient(circle at 35% 35%,#fff,#7ef 20%,#48f 55%,#123 100%);" +
+        "box-shadow:0 0 24px #4af,0 0 60px rgba(68,136,255,.5);display:flex;align-items:center;justify-content:center;" +
+        "color:#fff;font:700 26px/1 sans-serif;text-shadow:0 0 8px #fff;animation:cn3pulse 1.6s ease-in-out infinite;" +
+        "user-select:none;transition:transform .15s}" +
+        ".cn3-orb:hover{transform:scale(1.12)}" +
+        "@keyframes cn3pulse{0%,100%{box-shadow:0 0 18px #4af,0 0 40px rgba(68,136,255,.4)}" +
+        "50%{box-shadow:0 0 30px #6cf,0 0 80px rgba(68,136,255,.7)}}" +
+        ".cn3-toast{position:fixed;left:50%;top:12%;transform:translateX(-50%);z-index:100000;" +
+        "background:rgba(10,25,60,.92);color:#cfe8ff;border:1px solid #4af;border-radius:8px;" +
+        "padding:10px 18px;font:14px/1.5 sans-serif;box-shadow:0 0 18px rgba(68,136,255,.4);" +
+        "pointer-events:none;opacity:0;transition:opacity .3s,top .3s}" +
+        ".cn3-toast.show{opacity:1;top:14%}";
+    document.head.appendChild(style);
+
+    var orb = null;
+    var timer = null;
+
+    function gameReady() {
+        var g = window.__cv3;
+        return !!(g && g.ds && g.data && g.data.tuto_done && !g.data.pause &&
+            document.visibilityState !== "hidden" && /\/game/.test(location.hash));
+    }
+
+    function fmt(n) {
+        n = Math.floor(n);
+        if (n >= 1e9) return (n / 1e9).toFixed(2) + "B";
+        if (n >= 1e6) return (n / 1e6).toFixed(2) + "M";
+        if (n >= 1e3) return (n / 1e3).toFixed(2) + "K";
+        return "" + n;
+    }
+
+    function toast(msg) {
+        var el = document.createElement("div");
+        el.className = "cn3-toast";
+        el.textContent = msg;
+        document.body.appendChild(el);
+        setTimeout(function () { el.classList.add("show"); }, 30);
+        setTimeout(function () {
+            el.classList.remove("show");
+            setTimeout(function () { el.remove(); }, 400);
+        }, 3600);
+    }
+
+    function pickReward() {
+        var g = window.__cv3, ds = g.ds;
+        var p = ds.player(0);
+        var rank = 0;
+        try { rank = ds.currentScienceRank(0) || 0; } catch (e) { rank = 0; }
+        var roll = Math.random();
+        try {
+            if (roll < 0.35) {
+                var cap = ds.capital(0);
+                if (!cap) return "奇遇消散了……";
+                var max = ds.maxGold(cap);
+                var amt = Math.max(120, Math.floor(max * 0.04));
+                cap.gold = Math.min((cap.gold || 0) + amt, max);
+                return "奇遇！" + cap.name + " 获得 " + fmt(amt) + " 金币";
+            } else if (roll < 0.55) {
+                var f = 15 + rank * 8;
+                p.faith = (p.faith || 0) + f;
+                return "奇遇！获得 " + fmt(f) + " 信仰";
+            } else if (roll < 0.75) {
+                var c = 15 + rank * 8;
+                p.culture = (p.culture || 0) + c;
+                return "奇遇！获得 " + fmt(c) + " 文化";
+            } else if (roll < 0.94 && p.science_queue && p.science_queue.length) {
+                var sid = p.science_queue[0];
+                var def = ds.conf.sciences[sid];
+                var cost = ds.scienceCost(def, 0);
+                var amt2 = Math.floor(cost * 0.05);
+                if (!p.sciences[sid]) p.sciences[sid] = { progress: 0, done: false };
+                p.sciences[sid].progress += amt2;
+                return "奇遇！当前科技 +" + fmt(amt2) + " 进度";
+            } else {
+                p.progress = (p.progress || 0) + 1;
+                return "奇遇！获得 1 进度";
+            }
+        } catch (e) {
+            return "奇遇消散了……";
+        }
+    }
+
+    function collect() {
+        var msg = pickReward();
+        toast(msg);
+        if (orb) { orb.remove(); orb = null; }
+        schedule();
+    }
+
+    function spawn(force) {
+        if (orb) return;
+        if (!force && !gameReady()) { schedule(); return; }
+        var size = 64;
+        var w = window.innerWidth || 1024, h = window.innerHeight || 768;
+        var x = 20 + Math.random() * Math.max(40, w - size - 40);
+        var y = 80 + Math.random() * Math.max(40, h - size - 160);
+        orb = document.createElement("div");
+        orb.className = "cn3-orb";
+        orb.title = "奇点宝珠：点击领取奖励";
+        orb.textContent = "奇";
+        orb.style.left = x + "px";
+        orb.style.top = y + "px";
+        orb.addEventListener("click", collect);
+        document.body.appendChild(orb);
+        setTimeout(function () {
+            if (orb) { orb.remove(); orb = null; schedule(); }
+        }, 20000);
+    }
+
+    function schedule() {
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+            if (gameReady()) spawn(); else schedule();
+        }, 90000 + Math.random() * 150000);
+    }
+
+    window.__cn3_spawn = function () { spawn(true); };
+
+    var wait = setInterval(function () {
+        if (window.__cv3) {
+            clearInterval(wait);
+            setTimeout(function () {
+                if (gameReady()) spawn(); else schedule();
+            }, 45000 + Math.random() * 45000);
+        }
+    }, 3000);
 }();
